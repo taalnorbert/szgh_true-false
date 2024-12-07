@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Igaz-Hamis Kvíz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .quiz-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            border: 2px solid #ccc;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .incorrect-counter {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .question-number {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<body>
+    <div class="quiz-container">
+        <h1>Igaz-Hamis Kvíz</h1>
+        <div class="question-number pb-2" id="questionNumber">Kérdés: 1</div>
+        <p id="question"></p>
+        <div class="pt-2">
+            <label>
+                <input type="radio" name="answer" value="true" onchange="checkAnswer()" onclick="lockSelection()"> Igaz
+            </label>
+            <label>
+                <input type="radio" name="answer" value="false" onchange="checkAnswer()" onclick="lockSelection()"> Hamis
+            </label>
+        </div>
+        <button class="btn btn-success rounded" onclick="nextQuestion()">Következő</button>
+        <button class="btn btn-warning rounded" onclick="restartQuiz()">Újrakezdés</button>
+
+
+        <p class="result" id="result"></p>
+        <p class="incorrect-counter" id="incorrectCounter">Helytelen válaszok: 0</p>
+    </div>
+
+    <script>
+        const questions = [
+            { "text": "A „csúszóablakos” protokoll tartalmaz önálló nyugtakeretet.", "correct": "true" },
+            { "text": "A „csúszóablakos” protokollnak része a „Piggy-back” technika.", "correct": "true" },
+            { "text": "A „T-568A” és „T-568B” bekötése 50%-ba megegyezik.", "correct": "true" },
+  { "text": "A „T-568A” és „T-568B” bekötése több mint 50%-ban eltérő.", "correct": "false" },
+  { "text": "A 0G mobilhálózat jellemzője az automatikus hívásindítás.", "correct": "false" },
+  { "text": "A 0G mobilhálózat tisztán analóg megoldású.", "correct": "true" },
+  { "text": "A 10 gigabites Ethernet 16 különböző jelszintet használ.", "correct": "true" },
+  { "text": "A 10 gigabites Ethernet 5 különböző jelszintet használ.", "correct": "false" },
+  { "text": "A 10 gigabites Ethernet a Half- és a Full-duplex üzemmódot is támogatja.", "correct": "false" },
+  { "text": "A 10 gigabites Ethernet csak a Full-Duplex üzemmódot támogatja.", "correct": "true" },
+  { "text": "A 10 gigabites Ethernet használja a CSMA/CD protokollt.", "correct": "false" },
+  { "text": "A 10 gigabites Ethernet nem használja a CSMA/CD protokollt.", "correct": "true" },
+  { "text": "A 2,5G mobilhálózat része az UMTS.", "correct": "false" },
+  { "text": "A 2,5G mobilhálózat része a WAP és az EDGE.", "correct": "true" },
+  { "text": "A 256-QAM egyetlen jelváltozással 16 bitet kódol.", "correct": "false" },
+  { "text": "A 256-QAM egyetlen jelváltozással 8 bitet kódol.", "correct": "true" },
+  { "text": "A 256-QAM egyetlen jelváltozással 16 bitet kódol.", "correct": "false" },
+  { "text": "A 2G mobilhálózat részben digitális megoldású.", "correct": "false" },
+  { "text": "A 2G mobilhálózat teljesen digitális megoldású.", "correct": "true" },
+  { "text": "A 3G mobilhálózat része a WiMax.", "correct": "false" },
+  { "text": "A 3G mobilhálózat része az UMTS.", "correct": "true" },
+  { "text": "A 3G mobilhálózatnak nem része a WCDMA.", "correct": "false" },
+  { "text": "A 4G mobilhálózat része a WiMAX.", "correct": "true" },
+  { "text": "A 4G mobilhálózat része az LTE.", "correct": "true" },
+  { "text": "A 802.11 szabvány a WLAN-ra vonatkozik.", "correct": "true" },
+  { "text": "A 802.11 szabvány az Ethernet-re vonatkozik.", "correct": "false" },
+  { "text": "A 802.3 szabvány a vezeték nélküli LAN-okra vonatkozik.", "correct": "false" },
+  { "text": "A 802.3 szabvány az Ethernetre vonatkozik.", "correct": "true" },
+  { "text": "A 8B/10B kódolás 10 bitenként legalább 3 színváltást tartalmaz.", "correct": "true" },
+  { "text": "A 8B/10B kódolás 8 bitenként legalább 3 szintváltást tartalmaz.", "correct": "false" },
+  { "text": "A 8B/10B kódolás hatékonyabb mint a klasszikus Manchester kódolás.", "correct": "true" },
+  { "text": "A bináris konvolúciós kódok esetében nincsenek „valamilyen” határok.", "correct": "true" },
+  { "text": "A bináris konvolúciós kódok esetében nincsenek üzeneti határok.", "correct": "true" },
+  { "text": "A bináris mértékegység rendszer jellemzően háttértár méretére utal.", "correct": "false" },
+  { "text": "A bináris mértékegység rendszer jellemzően memória méretre utal.", "correct": "true" },
+  { "text": "A bináris rendszer jellemzően háttértár méretre utal.", "correct": "false" },
+  { "text": "A bináris visszaszámlálás protokoll a magasabb sorszámú hostoknak kedvez.", "correct": "true" },
+  { "text": "A bináris visszaszámlálás protokoll esetén a hostok sorszáma bináris.", "correct": "true" },
+  { "text": "A bináris visszaszámlálás protokoll jellemzője a versengési időrés.", "correct": "true" },
+  { "text": "A bináris visszaszámlálás protokoll ütközésmentes.", "correct": "true" },
+  { "text": "A BPDU keret célja a redundancia biztosítása.", "correct": "true" },
+  { "text": "A BPDU protokoll alapja a MAC cím.", "correct": "true" },
+  { "text": "A BPDU protokoll alapja az IP cím.", "correct": "false" },
+  { "text": "A bridge IP címek segítségével dolgozik.", "correct": "false" },
+  { "text": "A bridge MAC címek segítségével dolgozik.", "correct": "true" },
+  { "text": "A CAT5e szabvány maximális sávszélessége 100 MHz.", "correct": "true" },
+  { "text": "A CAT5e szabvány maximális sebessége 2 érpáron 100 Mb/s.", "correct": "true" },
+  { "text": "A CAT5e szabvány maximális sebessége 4 érpáron 100 Mb/s.", "correct": "false" },
+  { "text": "A CAT5e szabvány maximális sebessége 4 érpáron 1000 Mb/s.", "correct": "true" },
+  { "text": "A CAT6 szabvány maximális sávszélessége 100 méteren 250 MHz.", "correct": "true" },
+  { "text": "A CAT6 szabvány maximális sávszélessége 100 méteren 500 MHz.", "correct": "false" },
+  { "text": "A CAT6 szabvány maximális sebessége 100 méteren 1 Gb/s.", "correct": "true" },
+  { "text": "A CAT6 szabvány maximális sebessége 100 méteren 10 Gb/s.", "correct": "false" },
+  { "text": "A CAT6A szabvány maximális sávszélessége 100 méteren 500 MHz.", "correct": "true" },
+  { "text": "A CAT6A szabvány maximális sebessége 100 méteren 10 Gb/s.", "correct": "true" },
+  { "text": "A CAT6A szabvány maximális sebessége 100 méteren 1 Gb/s.", "correct": "false" },
+  { "text": "A CAT7 szabvány maximális sávszélessége 100 méteren 600 MHz.", "correct": "true" },
+  { "text": "A CAT7 szabvány maximális sávszélessége 100 méteren 750 MHz.", "correct": "false" },
+  { "text": "A CAT7 szabvány maximális sebessége 100 méteren 1 GB/s.", "correct": "false" },
+  { "text": "A CAT7 szabvány maximális sebessége 100 méteren 10 Gb/s.", "correct": "true" },
+  { "text": "A CIDR az IPv4 merev szabályait oldja fel.", "correct": "true" },
+  { "text": "A CIDR az IPv4-ben rugalmas hoszt kiosztást tesz lehetővé.", "correct": "true" },
+  { "text": "A CIDR az IPv6 osztályok merev szabályait oldja fel.", "correct": "false" },
+  { "text": "A CIDR és a NAT is hozzájárult az IPv4 címek elfogyásának késleltetéséhez.", "correct": "true" },
+  { "text": "A CIDR és a NAT is hozzájárult az IPv6 gyorsabb bevezetéséhez.", "correct": "false" },
+  { "text": "A Congestion jelentése: Forgalomszabályozás.", "correct": "false" },
+  { "text": "A Congestion jelentése: Torlódás.", "correct": "true" },
+  { "text": "A csatorna használata az összeköttetés nélküli rendszerekre jellemző.", "correct": "true" },
+  { "text": "A CSMA vezeték nélküli összeköttetésben hatékonyabb mint vezetékesben.", "correct": "false" },
+  { "text": "A CSMA/CA protokoll ütközés esetén azonnal ismétli az adást.", "correct": "false" },
+  { "text": "A CSMA/CD protokoll az adás megkezdése után is figyeli a csatornát.", "correct": "true" },
+  { "text": "A CSMA/CD ütközés érzékelésekor azonnal megszakítja az adást.", "correct": "true" },
+  { "text": "A datagram használata az összeköttetés alapú rendszerekre jellemző.", "correct": "false" },
+  { "text": "A datagram használata az összeköttetés nélküli rendszerekre jellemző.", "correct": "true" },
+  { "text": "A decimális alapú mértékegység rendszer jellemzően háttértár méretre utal.", "correct": "true" },
+  { "text": "A decimális alapú mértékegység rendszer jellemzően memória méretre utal.", "correct": "false" },
+  { "text": "A DNS időben sokkal az URL előtt jelent meg.", "correct": "true" },
+  { "text": "A DNS időben sokkal az URL után jelent meg.", "correct": "false" },
+  { "text": "A DNS és a DHCP a kapcsolódó internetes protokollok.", "correct": "true" },
+  { "text": "A DNS egy hálózati címke-rendszer.", "correct": "true" },
+  { "text": "A DUAL teljes nevén Distributed Unit Access Layer.", "correct": "false" },
+  { "text": "A DUAL teljes nevén Distance Vector Unicast Algorithm.", "correct": "false" },
+  { "text": "A DUAL teljes nevén Distance Vector Update Algorithm.", "correct": "true" },
+  { "text": "A DUAL protokoll segíti a dinamikus routing-ot.", "correct": "true" },
+  { "text": "A helyfoglalásos protokoll statikus állomás számokkal dolgozik", "correct": "false" },
+  { "text": "A HSS és HLR különböző feladatot látnak el", "correct": "true" },
+  { "text": "A kapcsolatállapot alapú útválasztás a távolságvektor alapú útválasztást váltotta fel", "correct": "true" },
+  { "text": "A kapcsolati réteg az OSI modellben található", "correct": "false" },
+  { "text": "A kapcsolati réteg az TCP/IP modellben található", "correct": "true" },
+  { "text": "A karakterszámlálás egy sérülésvédett keretezési megoldás", "correct": "false" },
+  { "text": "A karakterszámlálás nem igényel egyedi fejlécet", "correct": "true" },
+  { "text": "A keret előtag 7 bájt hosszú", "correct": "false" },
+  { "text": "A keret előtag 8 bájt hosszú", "correct": "true" },
+  { "text": "A keret réteg fő funkciója az időszinkronizáció", "correct": "true" },
+  { "text": "A kitöltés mező célja a minimális kerethossz elérésének biztosítása", "correct": "true" },
+  { "text": "A kitöltés mező hossza minden esetben több mint 0 bájt", "correct": "false" },
+  { "text": "A klasszikus Manchester kódolás hatékonyabb, mint a 8B/10B kódolás", "correct": "false" },
+  { "text": "A LAN kisebb hálózatot jelent, mint a WAN", "correct": "true" },
+  { "text": "A LAN nagyobb hálózat mint a WAN", "correct": "false" },
+  { "text": "A LAN nagyobb hálózatot jelent mint a MAN", "correct": "false" },
+  { "text": "A LAN nagyobb hálózatot jelent mint a WAN", "correct": "false" },
+  { "text": "A Layer 2 Switch képes az egyes VLAN-ok közötti forgalomirányításra", "correct": "false" },
+  { "text": "A Layer 2 switch nem képes az egyes VLAN-ok közötti forgalomirányításra", "correct": "true" },
+  { "text": "A Layer 3 switch képes az egyes VLAN-ok közötti forgalomirányításra", "correct": "true" },
+  { "text": "A Layer 3 switch nem képes az egyes VLAN-ok közötti forgalomirányításra", "correct": "false" },
+  { "text": "A leghosszabb rádióhullámok képesek követni a föld görbületét", "correct": "true" },
+  { "text": "A MAC alréteg felel a keretek épségéért", "correct": "false" },
+  { "text": "A MAC címek nem tartalmaznak lokalizációs információkat", "correct": "true" },
+  { "text": "A Manchester kódot XOR művelettel képezzük", "correct": "true" },
+  { "text": "A Manchester-kódot NOR művelettel képezzük", "correct": "false" },
+  { "text": "A megjelenítési réteg a(z) TCP/IP modellben található", "correct": "false" },
+  { "text": "A megjelenítési réteg az OSI modellben található", "correct": "true" },
+  { "text": "A mikrohullám visszaverődik az ionoszféráról", "correct": "false" },
+  { "text": "A mikrohullámok jól irányíthatóak", "correct": "true" },
+  { "text": "A MIMO erősen védett a visszaverődésekkel szemben", "correct": "true" },
+  { "text": "A MIMO párhuzamos csatornákkal növeli a sebességet", "correct": "true" },
+  { "text": "A MIMO tulajdonképpen az SDMA egyfajta kiterjesztése", "correct": "true" },
+  { "text": "A MIMO védettsége gyenge a visszaverődésekkel szemben", "correct": "false" },
+  { "text": "A modem célja, hogy a digitális adatot analóg módon átvihesse", "correct": "true" },
+  { "text": "A modem célja, hogy az analóg adatot digitális módon átvihesse", "correct": "false" },
+  { "text": "A NAT címfordítás a LAN és a WAN hálózat között történik", "correct": "true" },
+  { "text": "A nem perzisztens CSMA szabad csatorna esetén azonnal adni kezd", "correct": "false" },
+  { "text": "A nem-átlátszó darabolás esetén a csomagok egyesítése csak a célhosztnál történik meg", "correct": "true" },
+  { "text": "A nem-átlátszó darabolás esetén a darabolás az egyes hálózatokban függetlenül történik", "correct": "false" },
+  { "text": "A NEXT közelvégi áthallást jelent", "correct": "true" },
+  { "text": "A NEXT távolvégi áthallást jelent", "correct": "false" },
+  { "text": "A Nyquist tétel a zajos átviteli csatornával kapcsolatos", "correct": "false" },
+  { "text": "A Nyquist tétel az ideális átviteli csatornával kapcsolatos", "correct": "true" },
+  { "text": "A Nyugtázott datagram az összeköttetés nélküli rendszerre jellemző", "correct": "true" },
+  { "text": "A PAN kisebb hálózatot jelent, mint a MAN", "correct": "true" },
+  { "text": "A PAN nagyobb hálózatot jelent mint a LAN", "correct": "false" },
+  { "text": "A PAN nagyobb hálózatot jelent, mint a MAN", "correct": "false" },
+  { "text": "A p-perzisztens CSMA szabad csatorna esetén azonnal adni kezd", "correct": "false" },
+  { "text": "A protokoll a szolgáltatás implementációjának felel meg", "correct": "true" },
+  { "text": "A protokoll szabályok halmaza melyek a \"hogyan\" kérdéssel kapcsolatosak", "correct": "true" },
+  { "text": "A protokoll szabályok halmaza, amelyek a „mit” kérdéssel kapcsolatosak", "correct": "false" },
+  { "text": "A protokollokra valódi kommunikáció jellemző", "correct": "false" },
+  { "text": "A protokollokra virtuális kommunikáció jellemző", "correct": "true" },
+  { "text": "A PSNEXT a közelvégi áthallás összesített értékét jelenti", "correct": "true" },
+  { "text": "A PSNEXT az azonos szintű távolvégi áthallást jelenti", "correct": "false" },
+  { "text": "A QoS-t 6 paraméterrel határozzuk meg (Quality of service)", "correct": "false" },
+  { "text": "A QoS-t négy paraméterrel határozzuk meg", "correct": "true" },
+  { "text": "A QSS és a WPS kényelmi funkciókat szolgál", "correct": "true" },
+  { "text": "A QSS és a WPS növeli a rendszer védettségét", "correct": "false" },
+  { "text": "A Reed-Solomon kódolás matematikailag polinomokra épül", "correct": "true" },
+  { "text": "A Reed-Solomon kódolás például a CD/DVD szabványra jellemző", "correct": "true" },
+  { "text": "A Reed-Solomon kódolás például az USB szabványra jellemző", "correct": "false" },
+  { "text": "A réz alapú 10 gigabites Ethernet a 64B/66B kódolást használja", "correct": "false" },
+  { "text": "A réz alapú 10 gigabites Ethernet a 8B/10B kódolást használja", "correct": "true" },
+  { "text": "A RIP egy távolságvektor alapú IGP protokoll", "correct": "true" },
+  { "text": "A RIP fejrészében található sürgősségi mutató", "correct": "false" },
+  { "text": "A rövidhullám visszaverődik az ionoszféráról", "correct": "true" },
+  { "text": "A rövidhullámok képesek követni a föld görbületét", "correct": "false" },
+  { "text": "A RP illetve az RR a kábel rágcsálók elleni védelmét jelenti", "correct": "true" },
+  { "text": "A Shannon-tétel a zajos átviteli csatornával kapcsolatos", "correct": "true" },
+  { "text": "A Shannon-tétel az ideális átviteli csatornával kapcsolatos", "correct": "false" },
+  { "text": "A Simplex 'megáll és vár' protokoll használ nyugtakeretet", "correct": "true" },
+  { "text": "A Simplex 'megáll és vár' protokoll szinkronizációt használ", "correct": "true" },
+  { "text": "A Simplex megáll és vár protokoll nem használ nyugtakeretet", "correct": "false" },
+  { "text": "A Simplex összetett protokoll nem sorszámozza a kereteket", "correct": "false" },
+  { "text": "A Simplex összetett protokoll sorszámozza a kereteket", "correct": "true" },
+  { "text": "A switch IP-címek segítségével dolgozik", "correct": "false" },
+  { "text": "A switch MAC-címek segítségével dolgozik", "correct": "true" },
+  { "text": "A switch összeállítja a csomagot a keretekből és a csomagban lévő IP-címet használja a cél hoszt meghatározásásra", "correct": "false" },
+  { "text": "A switcheknek nem kell ismerni a hálózati réteg protokollját a routernek viszont ismernie kell azt", "correct": "true" },
+  { "text": "A szállítási réteg a feladatát az alatta lévő rétegek kialakításától függően végzi", "correct": "false" },
+  { "text": "A szállítási réteg csomagokat továbbít", "correct": "false" },
+  { "text": "A szállítási rétegben keretek továbbítódnak", "correct": "false" },
+  { "text": "A szállítási rétegben szegmensek továbbítódnak", "correct": "true" },
+  { "text": "A szállítási rétegben van címzés", "correct": "false" },
+  { "text": "A szelektív ismétlő protokoll használ negatív nyugtát is", "correct": "true" },
+  { "text": "A szélessávú vezeték nélküli hálózatok IEEE kódja: 802.16 (WiMAX)", "correct": "true" },
+  { "text": "A személyi hálózatok (Bluetooth, Zigbee) IEEE kódja: 802.15", "correct": "true" },
+  { "text": "A szolgáltatás a protokoll implementációjának felel meg", "correct": "false" },
+  { "text": "A szolgáltatás műveletek halmaza, amelyek a 'mit' kérdéssel kapcsolatosak", "correct": "true" },
+  { "text": "A T568A és a T568B bekötése 50%-ban megegyezik", "correct": "true" },
+  { "text": "A T-568A és T-568B bekötése több mint 50%-ban eltérő", "correct": "false" },
+  { "text": "A távolságvektor-alapú útválasztás a kapcsolatállapot-alapú útválasztást váltotta fel", "correct": "false" },
+  { "text": "A TCP fejrészben kötelező az ellenőrző összeg használata", "correct": "true" },
+  { "text": "A TCP fejrészében található sürgősségi mutató", "correct": "true" },
+  { "text": "A TCP kifejezésben kötelező az ellenőrző összeg használata", "correct": "true" },
+  { "text": "A TCP összeköttetés-alapú protokoll", "correct": "true" },
+  { "text": "A TCP protokoll az operációs rendszer része", "correct": "true" },
+  { "text": "A TCP protokoll fejrésze egyszerűbb mint az UDP protokoll fejrésze", "correct": "false" },
+    { "text": "A TCP protokoll fejrésze összetettebb, mint az UDP protokoll fejrésze", "correct": "true" },
+    { "text": "A típus/hossz mező kerethosszt jelöl, ha tartalma kisebb egyenlő, mint 0x0600", "correct": "true" },
+    { "text": "A típus/hossz mező típust jelöl, ha tartalma kisebb egyenlő, mint 0x0600", "correct": "false" },
+    { "text": "A típus/hossz mező típust jelöl, ha tartalma nagyobb, mint 0x0600", "correct": "true" },
+    { "text": "A TKIP a WEP védelem algoritmusa", "correct": "false" },
+    { "text": "A TKIP a WPA védelem algoritmusa", "correct": "true" },
+    { "text": "A torlódáskezelés a hálózat egészére értelmezhető fogalom", "correct": "true" },
+    { "text": "A versenyhelyzetben lévő protokollok kis terhelésnél teljesítenek jól", "correct": "true" },
+    { "text": "A versenyhelyzetben lévő protokollok nagy terhelésnél teljesítenek jól", "correct": "false" },
+    { "text": "A vezérjeles gyűrű esetén a hostok csak a következő hostig juttatják el a keretet", "correct": "true" },
+    { "text": "A vezérjeles gyűrű nem ütközésmentes", "correct": "false" },
+    { "text": "A vezérjeles gyűrű ütközésmentes", "correct": "true" },
+    { "text": "A vezérjeles vödör algoritmus esetén az adatok csak azonos sebességgel távozhatnak", "correct": "false" },
+    { "text": "A vezérjeles vödör algoritmus esetén az adatok különböző sebességgel távozhatnak", "correct": "true" },
+    { "text": "A visszalépés \"n\"-el protokoll például a műholdas technikában használatos", "correct": "true" },
+    { "text": "A viszony réteg az OSI modellben található", "correct": "true" },
+    { "text": "A VLAN fejléc 2 bájttal rövidebb, mint az Ethernet fejléc", "correct": "true" },
+    { "text": "A WAN MAN-okból épül fel", "correct": "true" },
+    { "text": "A WAN RAN-okból épül fel", "correct": "false" },
+    { "text": "A WEP az „n” szabványnak már nem része", "correct": "true" },
+    { "text": "A WEP titkosítás b/g/n szabványoknak egyaránt része", "correct": "false" },
+    { "text": "A WEP-es védelemre a kéretlen látogatók veszélyt jelentenek", "correct": "true" },
+    { "text": "ALOHA rendszerek esetén a nyugtázó csatornában nem fordulhat elő ütközés", "correct": "true" },
+    { "text": "ALOHA rendszerek esetén a nyugtázó csatornákban is lehet ütközés", "correct": "false" },
+    { "text": "Az 1000Base-T maximális átviteli sebessége 1 Gbit", "correct": "true" },
+    { "text": "Az 1000Base-T maximális átviteli sebessége 100MB/s", "correct": "false" },
+    { "text": "Az 1000Base-T maximális átviteli sebességet 100 Mbit", "correct": "false" },
+    { "text": "Az 1000Base-T-ben 5 különböző jelváltást értelmezünk", "correct": "true" },
+    { "text": "Az 1000Base-T-ben a T a sodrott érpárt jelöli", "correct": "true" },
+    { "text": "Az 1000Base-T-ben a T fényvezető szálat jelöli", "correct": "false" },
+    { "text": "Az 1024QAM egyetlen jelváltozással 10 bitet kódol", "correct": "true" },
+    { "text": "Az 1G digitális rendszer", "correct": "false" },
+    { "text": "Az 1G mobilhálózat nem támogatja az automatikus hívásátadást", "correct": "false" },
+    { "text": "Az 1G mobilhálózat részben digitális megoldású", "correct": "false" },
+    { "text": "Az 1G mobilhálózat teljesen analóg megoldású", "correct": "true" },
+    { "text": "Az 1-perzisztens CSMA nem vizsgálja a csatorna foglaltságát", "correct": "false" },
+    { "text": "Az 1-perzisztens CSMA vizsgálja a csatorna foglaltságát", "correct": "true" },
+    { "text": "Az 5G mobilhálózat adatátviteli sebessége a 4G mobilhálózat adatátviteli sebességének akár tízszerese is lehet", "correct": "true" },
+    { "text": "Az 5G mobilhálózat különböző specifikus frekvenciasávokban azonos feladatokat lát el", "correct": "false" },
+    { "text": "Az 5G mobilhálózat legfontosabb tulajdonsága a gyors válaszidő és késleltetés", "correct": "true" },
+    { "text": "Az adaptív forgalomirányító eljárások alkalmazkodnak a hálózati forgalomhoz és a topológiához", "correct": "true" },
+    { "text": "Az adatkapcsolati réteg a kereteket továbbítja", "correct": "true" },
+    { "text": "Az adatkapcsolati réteg a szegmenseket továbbítja", "correct": "false" },
+    { "text": "Az adatkapcsolati réteg egyik feladata a forgalomszabályozás", "correct": "true" },
+    { "text": "Az adatkapcsolati réteg nem végez forgalomszabályozást", "correct": "false" },
+    { "text": "Az adatkapcsolati rétegben csomagok továbbítódnak", "correct": "false" },
+    { "text": "Az adatkapcsolati rétegben keretek továbbítódnak", "correct": "true" },
+    { "text": "Az adatkapcsolati rétegben nincs forgalomszabályzás", "correct": "false" },
+    { "text": "Az adatkapcsolati rétegben van forgalomszabályozás", "correct": "true" },
+    { "text": "Az adatkapcsolati rétegnek nem a keretezés a fő feladata", "correct": "false" },
+    { "text": "Az AES a WEP2 védelem algoritmusa", "correct": "false" },
+    { "text": "Az AES a WPA védelem algoritmusa", "correct": "false" },
+    { "text": "Az AES a WPA2 védelem algoritmusa", "correct": "true" },
+    { "text": "Az alagút típusú átvitel, olyan módon áll össze 2 hálózat között, hogy azok a köztük lévő hálózat(ok) hosztjait nem is érhetik el.", "correct": "true" },
+    { "text": "Az ALOHA használ nyugtázást", "correct": "true" },
+    { "text": "Az ARP az IPv4 protokoll része", "correct": "true" },
+    { "text": "Az ARP az IPv6 protokoll része", "correct": "false" },
+    { "text": "Az átlátszó darabolás esetén a csomagok egyesítése csak a cél hosztnál történik meg", "correct": "false" },
+    { "text": "Az átlátszó darabolás esetén a csomagok egyesítése minden érintett hálózat elhagyásakor megtörténik", "correct": "true" },
+    { "text": "Az Auto Negotation az ütközések elkerülésének egyik megoldása", "correct": "false" },
+    { "text": "Az auto negotiation automatikus sebesség és duplexitás egyeztetést jelent", "correct": "true" },
+    { "text": "Az Ethernet az ütközések elkerülésére 1-perzisztens CSMA/CD egy változatát a MACA-t használja.", "correct": "true" },
+    { "text": "Az Ethernet fejléc 12 bájttal hosszabb mint a VLAN fejléc", "correct": "true" },
+    { "text": "Az Ethernet fejléc 2 bájttal hosszabb mint a VLAN fejléc", "correct": "false" },
+    { "text": "Az Ethernet hálózat NRZ-S kódolást használ", "correct": "false" },
+    { "text": "Az Ethernet hálózat NRZ-L kódolást használ", "correct": "true" },
+    { "text": "Az FTP egy megbízható protokoll, garantálja az átvitt adatok megérkezését", "correct": "true" },
+    { "text": "Az FTP egy nem megbízható protokoll, nem garantálja az átvitt adatok megérkezését", "correct": "false" },
+    { "text": "A gyakorlati modellben az adatkapcsolati réteg a fizikai réteg alatt található", "correct": "false" },
+    { "text": "Az ICMP protokoll nem képes hibákról és azok típusáról tájékoztatót adni", "correct": "false" },
+    { "text": "Az IEEE 802.10 kód a Virtuális LAN kódja", "correct": "true" },
+    { "text": "Az IEEE 802.11 adatkeretében a keretvezérlés 11 almezőből áll", "correct": "true" },
+    { "text": "Az IEEE 802.11 adatkeretében három cím szerepel", "correct": "true" },
+    { "text": "Az IEEE 802.11 adatkeretében két cím szerepel", "correct": "false" },
+    { "text": "Az IEEE 802.11 egyféle keretosztállyal dolgozik", "correct": "false" },
+    { "text": "Az IEEE 802.11 három féle keret osztállyal dolgozik", "correct": "true" },
+    { "text": "Az IEEE 802.11 szabvány a CSMA/CA protokollt használja", "correct": "true" },
+    { "text": "Az IEEE 802.11 szabvány a CSMA/CD protokollt használja", "correct": "false" },
+    { "text": "Az IEEE 802.10 kód a Virtuális LAN kódja", "correct": "true" },
+    { "text": "Az IEEE 802.3 szabványba a „Base” szó jelentése „alapvető”", "correct": "false" },
+    { "text": "Az IEEE 802.10 kód a Virtuális LAN (Virtual LAN -VLAN) kódja", "correct": "true" },
+    { "text": "Az IEEE802.11 szabvány az Ethernetre vonatkozik.", "correct": "false" },
+    { "text": "Az interfészekre valódi kommunikáció jellemző", "correct": "true" },
+    { "text": "Az interfészekre virtuális kommunikáció jellemző", "correct": "false" },
+    { "text": "Az internet réteg a TCP/IP modellben található", "correct": "true" },
+    { "text": "Az internet réteg az OSI modellben van.", "correct": "false" },
+    { "text": "Az IPv4 „A” osztály kevesebb hosztot tartalmaz, mint a „C” osztály", "correct": "false" },
+    { "text": "Az IPv4 datagram maximális mérete 65535 bájt", "correct": "true" },
+    { "text": "Az IPv4 datagram maximális mérete kevesebb mint 65535 bájt", "correct": "false" },
+    { "text": "Az IPv4 fejrész maximális fix hossza 20 bájt", "correct": "false" },
+    { "text": "Az IPv4 fejrész minimális fix hossza 20 bájt", "correct": "true" },
+    { "text": "Az IPv4 fejrész tartalmaz ellenőrző összeget", "correct": "true" },
+    { "text": "Az IPv4 fejrész teljes hossz mezője 16 bites", "correct": "true" },
+    { "text": "Az IPv4 hálózati maszkban a 0-ás értéket semmiképpen sem követhet 1-es érték", "correct": "true" },
+    { "text": "Az IPv4-ben a broadcast cím mindig 0-ra végződik", "correct": "false" },
+    { "text": "Az IPv4-ben egy hálózat címe mindig 0-ra végződik", "correct": "true" },
+    { "text": "Az IPv6 adatmező maximális mérete 65535 bájt", "correct": "true" },
+    { "text": "Az IPv6 címzési rendszere tartalmazza az IPv4-ben megismert osztályokat", "correct": "false" },
+    { "text": "Az IPv6 fejrész maximális hossza kétszerese az IPv4 fejrész maximális hosszának", "correct": "false" },
+    { "text": "Az IPv6 fejrész maximális hossza kétszerese az IPv4 fejrész minimális hosszának", "correct": "true" },
+    { "text": "Az IPv6 fejrész több mezőt tartalmaz, mint az IPv4 fejrész", "correct": "false" },
+    { "text": "Az IPv6 fejrészben az ugráskorlát értéke csak ugrásonként csökken 1-el", "correct": "true" },
+    { "text": "Az ISP az „internetwork service provider” rövidítése", "correct": "false", "note": "Internet SP" },
+    { "text": "Az ISP az egyes IXP-k közötti adatforgalmat biztosítja", "correct": "false", "note": "fordítva" },
+    { "text": "AZ IT-ban használt IEC mértékegység alapja a kettes számrendszer", "correct": "true" },
+    { "text": "Az IT-ban használt IEC mértékegység alapja a tízes számrendszer", "correct": "false" },
+    { "text": "Az IT-ban használt IEC mértékegységrendszer alapja a 10-es számrendszer", "correct": "false", "note": "kettes" },
+    { "text": "Az IT-ban használt IEC mértékegységrendszer alapja a kettes számrendszer", "correct": "true" },
+    { "text": "Az IXP az egyes ISP-ek közötti adatforgalmat biztosítja", "correct": "true" },
+    { "text": "Az LDPC kódolás esetén a kódolt üzenet hosszabb, mint az eredeti üzenet", "correct": "true" },
+    { "text": "Az LDPC kódolás matematikailag mátrixokra épül", "correct": "true" },
+    { "text": "Az LDPC kódolás matematikailag polinomokra épül", "correct": "false" },
+    { "text": "Az LDPC kódolásnak jelentős a szoftveres erőforrás igénye", "correct": "true" },
+    { "text": "Az LDPC kódolásnak nem jelentős a szoftveres erőforrásigénye", "correct": "false" },
+    { "text": "Az LLC alréteg felel a csatorna kiosztásáért", "correct": "false", "note": "MAC" },
+    { "text": "Az LLC alréteg felel a keretek épségéért", "correct": "true" },
+    { "text": "Az LSOH/LSZH a kábel égésekor felszabaduló gázokra utal", "correct": "true" },
+    { "text": "Az LSOH/LSZH a kábel mechanikai tesztelésének jelzése", "correct": "false", "note": "Kábel égés" },
+    { "text": "Az MSC és a GMSC biztosítja a mobilhálózat és az internet közötti adatcserét", "correct": "true" },
+    { "text": "Az MSC és a GMSC biztosítja a mobilhálózat és az internet közötti kapcsolatot", "correct": "false", "note": "MSC –Mobile Switching Center, Átjáró Mobil Kapcsolóközpont GMSC – Gateway Mobile Switching Center" },
+    { "text": "Az NDP az IPv6 protokoll része", "correct": "true" },
+    { "text": "Az NR2-S kódolást az USB szabvány használja", "correct": "false" },
+    { "text": "Az NRZ-I kódolás alapja az NRZ-L jel", "correct": "false", "note": "NRZ-M" },
+    { "text": "Az NRZ-I kódolás alapja az NRZ-M jel", "correct": "true", "note": "NRZ-M Inverze" },
+    { "text": "Az NRZ-I kódolást az USB szabvány használja", "correct": "true" },
+    { "text": "Az NRZ-L értéke csak 1-ről 0-ra történő jelváltás után változik meg", "correct": "false" },
+    { "text": "Az NRZ-L értéke minden jelváltás után megváltozik", "correct": "true" },
+    { "text": "Az NRZ-M értéke csak 0-ról 1-re történő jelváltás után változik meg", "correct": "true" },
+    { "text": "Az NRZ-M értéke csak 1-ről 0-ra történő jelváltás után változik meg", "correct": "false", "note": "fordítva" },
+    { "text": "Az NRZ-M értéke minden jelváltás után megváltozik", "correct": "false", "note": "csak 1-es bit hatására" },
+    { "text": "Az NRZ-M kódolást az USB szabvány használja", "correct": "false", "note": "NRZ-I" },
+    { "text": "Az NRZ-S értéke csak 1-ről 0-ra történő jelváltás után változik meg", "correct": "true" },
+    { "text": "Az NRZ-S értéke minden jelváltás után megváltozik", "correct": "false", "note": "csak 0-s bit hatására" },
+    { "text": "Az NRZ-S kódolást a USB szabvány használja", "correct": "false", "note": "NRZ-I" },
+    { "text": "Az OFDM a nagy sebességű jelfolyamot több kisebb sebességűre bontja", "correct": "true" },
+    { "text": "Az optikai 10 gigabites Ethernet a 64B/66B kódolást használja", "correct": "true" },
+    { "text": "Az optikai kábelek a 64B/66B kódolást használják", "correct": "true" },
+    { "text": "Az RP illetve az RR a kábel égésekor felszabaduló gázokra utal", "correct": "false", "note": "kisegér rágcsál" },
+    { "text": "Az RP illetve az RR a kábel rágcsálók elleni védelmét jelenti", "correct": "true" },
+    { "text": "Az RTP fejrészében nem található sürgősségi mutató", "correct": "true" },
+    { "text": "Az RTP fejrészében található a sürgősségi mutató", "correct": "false" },
+    { "text": "Az RTP protokoll az operációs rendszer része", "correct": "false" },
+    { "text": "Az RTP protokoll az UDP protokollra épül", "correct": "true" },
+    { "text": "Az RTP protokoll nem az operációs rendszer része", "correct": "true" },
+    { "text": "Az SSID azonosító egy maximum 32 karakter hosszú szabad választott név", "correct": "true" },
+    { "text": "Az STP támadása esetén az aktuális gyökér MAC címénél kisebb cím hálózatba juttatása a cél", "correct": "false", "note": "nem STP hanem SPT!" },
+    { "text": "Az SPT támadása esetén az aktuális gyökér MAC címénél kisebb cím hálózatba juttatása a cél", "correct": "true" },
+    { "text": "Az UDP egy nem megbízható protokoll, nem garantálja az átvitt adatok megérkezését", "correct": "true" },
+    { "text": "Az UDP egy összeköttetés nélküli protokoll", "correct": "true" },
+    { "text": "Az UDP fejrészben kötelező az ellenőrző összeg használata", "correct": "false", "note": "nem kötelező, de növeli az adatbiztonságot" },
+    { "text": "Az UDP fejrészben található sürgősségi mutató", "correct": "false", "note": "TCP" },
+    { "text": "Az UDP protokoll fejrésze összetettebb, mint a TCP protokoll fejrésze", "correct": "false", "note": "U.A" },
+    { "text": "Az UDP protokoll nem az operációs rendszer része", "correct": "false" },
+    { "text": "Az URL tulajdonképpen a DNS szolgáltatásait teszi a felhasználó számára még produktívabbá", "correct": "true" },
+    { "text": "Datagram alapú összeköttetés esetében bonyolult a szolgáltatás minőségének biztosítása", "correct": "true" },
+    { "text": "Datagram alapú összeköttetés esetében bonyolult a szolgáltatás működésének biztosítása", "correct": "true" },
+    { "text": "Egy geostacionárius műholddal fix parabolaantennával kommunikálhatunk", "correct": "true" },
+    { "text": "Egy geoszinkron műholddal fix parabolaantennával kommunikálhatunk", "correct": "false" },
+    { "text": "Egy informatikai mérnök számára a sávszélesség egysége a Hz", "correct": "false" },
+    { "text": "Egy informatikai mérnök számára a sávszélesség a bit/sec", "correct": "true" },
+    { "text": "Egy ISP-n belül nagyszámú POP található", "correct": "true" },
+    { "text": "Egy kilobájt több, mint egy kibibájt", "correct": "false" },
+    { "text": "Egy megabájt kisebb, mint egy mebibájt", "correct": "true" },
+    { "text": "Egy Switch-ekkel összekapcsolt hálózatban nem fordulhat elő ütközés", "correct": "true" },
+    { "text": "Egy terrabájt kevesebb mint egy tebibájt", "correct": "true" },
+    { "text": "Egy villamosmérnök számára a sávszélesség egysége a bit/sec", "correct": "false" },
+    { "text": "Egy villamosmérnök számára a sávszélesség egysége a Hz", "correct": "true" },
+    { "text": "ISP jelentése – Internet Service Provider", "correct": "true" },
+    { "text": "Jellemzően kis távolságok áthidalására használnak optikai kábeleket", "correct": "false" },
+    { "text": "Jellemzően nagy távolságok áthidalására használnak optikai kábeleket", "correct": "true" },
+    { "text": "Kilobájt (1000 bájt) < Kibibájt (1024 bájt); Megabájt < Mebibájt", "correct": "true" },
+    { "text": "LDPC kódolás használatos például a DVB-T2 műholdas rendszerben", "correct": "true" },
+    { "text": "Lyukas vödör algoritmus esetén az adatok különböző sebességgel távozhatnak", "correct": "false" },
+    { "text": "Lyukas vödör algoritmus esetén felléphet túlcsordulás adatvesztés", "correct": "true" },
+    { "text": "Lyukas vödör algoritmus esetén nem léphet fel túlcsordulás, adatvesztés", "correct": "false" },
+    { "text": "Minél kisebb a hullámhossz annál jobb a tárgyakon való áthaladás", "correct": "false" },
+    { "text": "Minél nagyobb a hullámhossz annál jobb a tárgyakon való áthaladás", "correct": "true" },
+    { "text": "MODEM: a kifejezés a „modulátor” és „demodulátor” szavakból származik, és olyan berendezést jelent, ami egy vivőhullám modulációjával az analóg jelet digitálissá alakítja", "correct": "false" },
+    { "text": "NAT használata esetén a LAN hálózatnak nem kell nyilvános IP címmel rendelkeznie", "correct": "true" },
+    { "text": "NAT használata esetén a LAN hálózatnak nyilvános IP címmel kell rendelkeznie", "correct": "false" },
+    { "text": "Nyugtázott datagram az összeköttetés nélkülire jellemző", "correct": "true" },
+    { "text": "Összeköttetés alapú rendszerekben minimum hat szolgáltatási primitív kell", "correct": "true" },
+    { "text": "Összeköttetés nélküli rendszer esetén az egyes datagramok különböző útvonalakon érnek célba", "correct": "true" },
+    { "text": "Összeköttetés nélküli rendszerekben minimum hat szolgáltatás primitív kell", "correct": "false" },
+    { "text": "Összeköttetés nélküli rendszerre példa a postai levél szolgáltatás", "correct": "true" },
+    { "text": "Páratlan paritás esetén a paritásbit 0, ha a kódszóban az 1-esek száma páratlan", "correct": "true" },
+    { "text": "Páratlan paritás esetén a paritásbit 1, ha a kódszóban az 1-esek száma páros", "correct": "true" },
+    { "text": "Páros paritás esetén a paritásbit 0, ha a kódszóban az 1-esek száma páros", "correct": "true" },
+    { "text": "Páros paritás esetén a paritásbit 0, ha a kódszóban az 1-esek száma páratlan", "correct": "false" },
+    { "text": "Páros paritás esetén a paritásbit 1, ha a kódszóban az 1-esek száma páratlan", "correct": "true" },
+    { "text": "Páros paritás esetén a paritásbit 1, ha a kódszóban az 1-esek száma páros", "correct": "false" },
+    { "text": "Rekurzív kérés esetén a DNS szerver teljes mértékben megválaszolja a kérést vagy hibajelzést ad", "correct": "true" },
+    { "text": "RNC jelentése „Radio Network Controller”", "correct": "true" },
+    { "text": "Vezérjeles algoritmus esetén nem léphet fel túlcsordulás, adatvesztés", "correct": "true" },
+    { "text": "Vezérjeles gyűrű esetén az elküldött keret több kört is megtehet", "correct": "false" },
+    { "text": "Vezérjeles gyűrű esetén minden hoszt azonos prioritású", "correct": "false" },
+    { "text": "Vezetékes átvitel esetén célszerű a hibadetektálás és az adatismétlés", "correct": "true" },
+    { "text": "Vezetékes átvitel esetén célszerű a hibajavítás", "correct": "false" },
+    { "text": "Virtuális áramkör alapú összeköttetés esetében egyszerű a torlódáskezelés", "correct": "true" },
+    { "text": "Virtuális LAN (Virtual LAN - VLAN) IEEE kódja a 802.10", "correct": "true" },
+    { "text": "Visszalépés „n”-el protokoll például a műholdas technikában használatos", "correct": "true" },
+    { "text": "Vivőjel érzékelés nélkül nem dönthető el hogy egy csatorna foglalt-e", "correct": "true" },
+    { "text": "A FEXT távolvégi áthallást jelent", "correct": "true" },
+    { "text": "1-perzisztens CSMA/CD, kettes exponenciális visszalépéssel dolgozik", "correct": "true" },
+    { "text": "A vezérjeles gyűrű protokoll permutálja az állomásszámokat", "correct": "false" },
+    { "text": "Kezdő és vég karakterek beszúrása esetén elég egy karakter fajta beszúrása", "correct": "false" },
+    { "text": "Az Internet a Manchester kódolás inverzét használja", "correct": "true" },
+    { "text": "Az X-25-ös nem igazán elterjedt protokoll", "correct": "false" },
+    { "text": "A FEXT közelvégi áthallást jelent", "correct": "false" },
+    { "text": "Mikrohullám visszaverődik az ionoszféráról", "correct": "false" },
+    { "text": "Virtuális áramkör alapú összeköttetés esetében egyszerű a szolgáltatás minőségének biztosítása", "correct": "false" },
+    { "text": "IPv4 maszkban 1-est nem követhet 0-s érték", "correct": "false" },
+    { "text": "Összeköttetés nélküli rendszer esetén az egyes datagramok különböző útvonalakon érnek célba", "correct": "true" },
+    { "text": "A WAN MAN-okból épül fel", "correct": "true" }
+        ];
+
+        let currentQuestion = 0;
+let incorrectAnswers = 0;
+let selectedQuestions = [];
+
+function selectRandomQuestions() {
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    selectedQuestions = shuffled.slice(0, 24);
+}
+
+function loadQuestion() {
+    document.getElementById("question").textContent = selectedQuestions[currentQuestion].text;
+    document.getElementById("result").textContent = "";
+    document.getElementById("questionNumber").textContent = `Kérdés: ${currentQuestion + 1} / ${selectedQuestions.length}`;
+    document.querySelectorAll('input[name="answer"]').forEach(input => input.checked = false);
+}
+
+function checkAnswer() {
+    const selected = document.querySelector('input[name="answer"]:checked');
+    if (!selected) return;
+
+    const isCorrect = selected.value === selectedQuestions[currentQuestion].correct;
+    const resultElement = document.getElementById("result");
+    const incorrectCounterElement = document.getElementById("incorrectCounter");
+
+    if (!isCorrect) {
+        incorrectAnswers++;
+        incorrectCounterElement.textContent = `Helytelen válaszok: ${incorrectAnswers}`;
+    }
+    resultElement.textContent = isCorrect ? "Helyes!" : "Helytelen!";
+    resultElement.className = isCorrect ? "result text-success" : "result text-danger";
+}
+function lockSelection() {
+    const answers = document.querySelectorAll('input[name="answer"]');
+    answers.forEach(input => input.disabled = true);
+}
+
+
+function restartQuiz() {
+    const answers3 = document.querySelectorAll('input[name="answer"]');
+    answers3.forEach(input => input.disabled = false);
+    currentQuestion = 0;
+    incorrectAnswers = 0;
+    selectRandomQuestions();
+    document.getElementById("incorrectCounter").textContent = `Helytelen válaszok: ${incorrectAnswers}`;
+    loadQuestion();
+}
+
+function nextQuestion() {
+    const answers2 = document.querySelectorAll('input[name="answer"]');
+    answers2.forEach(input => input.disabled = false);
+    const selected = document.querySelector('input[name="answer"]:checked');
+    if (!selected) {
+        document.getElementById("result").textContent = "Kérlek, válassz egy lehetőséget!";
+        document.getElementById("result").className = "result text-danger";
+        return;
+    }
+
+    if (currentQuestion < selectedQuestions.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+    } else {
+        const totalQuestions = selectedQuestions.length;
+        const correctAnswers = totalQuestions - incorrectAnswers;
+        let grade;
+
+        if (correctAnswers >= 23) {
+            grade = "5 (Kiváló)";
+        } else if (correctAnswers >= 21) {
+            grade = "4 (Jó)";
+        } else if (correctAnswers >= 19) {
+            grade = "3 (Közepes)";
+        } else if (correctAnswers >= 17) {
+            grade = "2 (Elégséges)";
+        } else {
+            grade = "1 (Elégtelen)";
+        }
+
+        alert(`Vége a kvíznek! Pontszám: ${correctAnswers} / ${totalQuestions}\nJegy: ${grade}\nKattints az 'Újrakezdés' gombra, hogy újra próbáld.`);
+    }
+}
+
+
+
+selectRandomQuestions();
+loadQuestion();
+
+    </script>
+</body>
+</html>
